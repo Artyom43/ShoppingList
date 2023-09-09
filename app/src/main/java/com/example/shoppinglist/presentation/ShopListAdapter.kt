@@ -1,20 +1,12 @@
 package com.example.shoppinglist.presentation
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import com.example.shoppinglist.R
 import com.example.shoppinglist.domain.ShopItem
 
-class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>() {
-
-    var shopList = listOf<ShopItem>()
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
+class ShopListAdapter : ListAdapter<ShopItem, ShopItemViewHolder>(ShopItemDiffCallback()) {
 
     var onShopItemClickListener: ((ShopItem) -> Unit)? = null
     var onShopItemLongClickListener: ((ShopItem) -> Unit)? = null
@@ -30,11 +22,11 @@ class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (shopList[position].enabled) ENABLED else DISABLED
+        return if (getItem(position).enabled) ENABLED else DISABLED
     }
 
     override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
-        val shopItem = shopList[position]
+        val shopItem = getItem(position)
         with(holder) {
             tvName.text = shopItem.name
             tvCount.text = shopItem.count.toString()
@@ -44,25 +36,13 @@ class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>
             }
             view.setOnClickListener {
                 onShopItemClickListener?.invoke(shopItem)
-                true
             }
         }
     }
 
-    override fun getItemCount(): Int {
-        return shopList.size
-    }
-
-
-
-    class ShopItemViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val tvName: TextView = view.findViewById(R.id.tv_name)
-        val tvCount: TextView = view.findViewById(R.id.tv_count)
-    }
-
     companion object {
-        val ENABLED = 0
-        val DISABLED = 1
+        const val ENABLED = 0
+        const val DISABLED = 1
 
         const val MAX_POOL_SIZE = 5
     }
