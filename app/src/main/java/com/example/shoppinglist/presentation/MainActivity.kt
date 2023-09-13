@@ -1,8 +1,10 @@
 package com.example.shoppinglist.presentation
 
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -11,14 +13,16 @@ import com.example.shoppinglist.presentation.ShopItemActivity.Companion.newInten
 import com.example.shoppinglist.presentation.ShopItemActivity.Companion.newIntentEditItem
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishListener {
 
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: ShopListAdapter
+    private var shopItemContainer: FragmentContainerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        shopItemContainer = findViewById(R.id.shop_item_container)
         setupRecyclerView()
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         viewModel.shopList.observe(this) {
@@ -26,8 +30,17 @@ class MainActivity : ComponentActivity() {
         }
         val buttonAddItem = findViewById<FloatingActionButton>(R.id.button_add_shop_item)
         buttonAddItem.setOnClickListener {
-            startActivity(newIntentAddItem(this))
+            if (isOnePaneMode()) {
+                startActivity(newIntentAddItem(this))
+            } else {
+                launchFragment(ShopItemFragment.newInstanceAddItem())
+            }
         }
+    }
+
+    override fun onEditingFinished() {
+        Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
+        supportFragmentManager.popBackStack()
     }
 
     private fun setupRecyclerView() {
@@ -48,6 +61,20 @@ class MainActivity : ComponentActivity() {
         setupLongClickListener()
         setupClickListener()
         setupSwipeListener(rvShopList)
+    }
+
+    private fun isOnePaneMode(): Boolean {
+        return shopItemContainer == null
+    }
+
+    private fun launchFragment(fragment: Fragment) {
+        supportFragmentManager.apply {
+            popBackStack()
+            beginTransaction()
+                .replace(R.id.shop_item_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     private fun setupSwipeListener(rvShopList: RecyclerView?) {
@@ -75,8 +102,11 @@ class MainActivity : ComponentActivity() {
 
     private fun setupClickListener() {
         adapter.onShopItemClickListener = {
-            Log.d("MainActivity", it.toString())
-            startActivity(newIntentEditItem(this, it.id))
+            if (isOnePaneMode()) {
+                startActivity(newIntentEditItem(this, it.id))
+            } else {
+                launchFragment(ShopItemFragment.newInstanceEditItem(it.id))
+            }
         }
     }
 
