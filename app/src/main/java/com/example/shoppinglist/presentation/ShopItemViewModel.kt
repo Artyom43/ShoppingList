@@ -4,11 +4,13 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.shoppinglist.data.ShopListRepoImpl
 import com.example.shoppinglist.domain.AddShopItemUseCase
 import com.example.shoppinglist.domain.EditShopItemUseCase
 import com.example.shoppinglist.domain.GetShopItemUseCase
 import com.example.shoppinglist.domain.ShopItem
+import kotlinx.coroutines.launch
 
 class ShopItemViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -36,8 +38,10 @@ class ShopItemViewModel(application: Application) : AndroidViewModel(application
         get() = _shouldCloseScreen
 
     fun getShopItem(id: Int) {
-        val item = getShopItemUseCase.getShopItem(id)
-        _shopItem.value = item
+        viewModelScope.launch {
+            val item = getShopItemUseCase.getShopItem(id)
+            _shopItem.value = item
+        }
     }
 
     fun editShopItem(inputName: String?, inputCount: String?) {
@@ -46,8 +50,10 @@ class ShopItemViewModel(application: Application) : AndroidViewModel(application
         if (validateInput(name, count)) {
             _shopItem.value?.let {
                 val shopItem = it.copy(name = name, count = count)
-                editShopItemUseCase.editShopItem(shopItem)
-                finishWork()
+                viewModelScope.launch {
+                    editShopItemUseCase.editShopItem(shopItem)
+                    finishWork()
+                }
             }
         }
     }
@@ -56,9 +62,11 @@ class ShopItemViewModel(application: Application) : AndroidViewModel(application
         val name = parseName(inputName)
         val count = parseCount(inputCount)
         if (validateInput(name, count)) {
-            val shopItem = ShopItem(name = name, count = count, enabled = true)
-            addShopItemUseCase.addShopItem(shopItem)
-            finishWork()
+            viewModelScope.launch {
+                val shopItem = ShopItem(name = name, count = count, enabled = true)
+                addShopItemUseCase.addShopItem(shopItem)
+                finishWork()
+            }
         }
     }
 

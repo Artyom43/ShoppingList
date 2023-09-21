@@ -10,7 +10,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.sumin.shoppinglist"
+        applicationId "com.example.shoppinglist"
         minSdkVersion 23
         targetSdkVersion 33
         versionCode 1
