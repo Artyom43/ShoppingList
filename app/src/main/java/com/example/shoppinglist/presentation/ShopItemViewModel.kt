@@ -1,18 +1,18 @@
 package com.example.shoppinglist.presentation
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.shoppinglist.data.ShopListRepoImpl
 import com.example.shoppinglist.domain.AddShopItemUseCase
 import com.example.shoppinglist.domain.EditShopItemUseCase
 import com.example.shoppinglist.domain.GetShopItemUseCase
 import com.example.shoppinglist.domain.ShopItem
-import java.lang.NumberFormatException
 
-class ShopItemViewModel : ViewModel() {
+class ShopItemViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo = ShopListRepoImpl
+    private val repo = ShopListRepoImpl(application)
 
     private val getShopItemUseCase = GetShopItemUseCase(repo)
     private val addShopItemUseCase = AddShopItemUseCase(repo)
